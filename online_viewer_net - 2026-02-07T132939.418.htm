@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>حاسبة حجم المنشور الرباعي</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    *{ font-family:"Tajawal",system-ui,-apple-system,Segoe UI,Arial,sans-serif; }
+    .glass{ background:rgba(255,255,255,.92); backdrop-filter: blur(10px); }
+    .shadow-soft{ box-shadow: 0 12px 35px rgba(0,0,0,.12); }
+    .step-dot{ width:10px; height:10px; border-radius:9999px; }
+    .no-spin::-webkit-outer-spin-button,.no-spin::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+    .no-spin{ -moz-appearance:textfield; }
+    .svg-text{ font-weight:800; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-indigo-200 via-sky-100 to-purple-200">
+  <main class="max-w-3xl mx-auto p-4 sm:p-6">
+    <header class="text-center mb-5">
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800">حاسبة حجم المنشور الرباعي</h1>
+      <p class="text-slate-600 mt-2">واجهة طالب + رسم توضيحي للأبعاد + خطوات حل واضحة.</p>
+    </header>
+
+    <section class="glass shadow-soft rounded-2xl p-4 sm:p-6">
+      <!-- شريط الخطوات -->
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <div class="flex items-center gap-2">
+          <span id="dot1" class="step-dot bg-indigo-600"></span>
+          <span class="text-sm sm:text-base font-bold text-slate-700">١) إدخال البيانات</span>
+        </div>
+        <div class="flex-1 h-[2px] bg-slate-200 rounded"></div>
+        <div class="flex items-center gap-2">
+          <span id="dot2" class="step-dot bg-slate-300"></span>
+          <span class="text-sm sm:text-base font-bold text-slate-700">٢) الحساب</span>
+        </div>
+        <div class="flex-1 h-[2px] bg-slate-200 rounded"></div>
+        <div class="flex items-center gap-2">
+          <span id="dot3" class="step-dot bg-slate-300"></span>
+          <span class="text-sm sm:text-base font-bold text-slate-700">٣) القاعدة والشرح</span>
+        </div>
+      </div>
+
+      <!-- إعدادات سريعة -->
+      <div class="grid sm:grid-cols-3 gap-3 mb-5">
+        <div class="flex items-center gap-2 p-3 rounded-2xl bg-white border border-slate-200">
+          <span class="text-sm font-bold text-slate-700">وحدة القياس:</span>
+          <select id="unit" class="px-3 py-2 rounded-xl border border-slate-200 bg-white flex-1">
+            <option value="مم">مم</option>
+            <option value="سم" selected>سم</option>
+            <option value="م">م</option>
+          </select>
+        </div>
+
+        <label class="flex items-center gap-2 p-3 rounded-2xl bg-white border border-slate-200 cursor-pointer select-none">
+          <input id="arabicDigits" type="checkbox" class="w-4 h-4" checked>
+          <span class="text-sm font-bold text-slate-700">أرقام عربية (٠١٢٣)</span>
+        </label>
+
+        <label class="flex items-center gap-2 p-3 rounded-2xl bg-white border border-slate-200 cursor-pointer select-none">
+          <input id="studentMode" type="checkbox" class="w-4 h-4" checked>
+          <span class="text-sm font-bold text-slate-700">وضع الطالب (تبسيط)</span>
+        </label>
+      </div>
+
+      <!-- الخطوة 1 -->
+      <div id="step1" class="space-y-4">
+
+        <!-- الرسم التوضيحي -->
+        <div class="p-4 rounded-2xl bg-white border border-slate-200">
+          <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+            <div class="font-extrabold text-slate-800">الرسم التوضيحي للأبعاد</div>
+            <div class="text-xs text-slate-500 font-bold">يتحدّث تلقائيًا مع القيم</div>
+          </div>
+
+          <div class="rounded-2xl bg-slate-50 border border-slate-200 p-2 overflow-hidden">
+            <svg id="prismSvg" viewBox="0 0 420 260" class="w-full h-auto">
+              <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#0f172a"></path>
+                </marker>
+              </defs>
+
+              <!-- منشور -->
+              <polygon points="120,90 270,60 350,110 200,140" fill="#c7d2fe" stroke="#334155" stroke-width="2" />
+              <polygon points="120,90 200,140 200,220 120,170" fill="#bfdbfe" stroke="#334155" stroke-width="2" />
+              <polygon points="200,140 350,110 350,190 200,220" fill="#93c5fd" stroke="#334155" stroke-width="2" />
+
+              <!-- أضلاع -->
+              <line x1="120" y1="90" x2="120" y2="170" stroke="#334155" stroke-width="2" />
+              <line x1="270" y1="60" x2="270" y2="140" stroke="#334155" stroke-width="2" />
+              <line x1="350" y1="110" x2="350" y2="190" stroke="#334155" stroke-width="2" />
+
+              <!-- أبعاد الطول/العرض/الارتفاع -->
+              <g id="dimLWGroup">
+                <line x1="120" y1="232" x2="200" y2="232" stroke="#0f172a" stroke-width="2"
+                      marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                <text id="svgLen" x="160" y="252" text-anchor="middle" fill="#0f172a" class="svg-text" font-size="14">الطول: —</text>
+
+                <line x1="120" y1="232" x2="70" y2="200" stroke="#0f172a" stroke-width="2"
+                      marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                <text id="svgWid" x="70" y="190" text-anchor="start" fill="#0f172a" class="svg-text" font-size="14">العرض: —</text>
+
+                <line x1="372" y1="190" x2="372" y2="110" stroke="#0f172a" stroke-width="2"
+                      marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                <text id="svgH" x="372" y="100" text-anchor="middle" fill="#0f172a" class="svg-text" font-size="14">الارتفاع: —</text>
+              </g>
+
+              <!-- وضع مساحة القاعدة -->
+              <g id="dimAreaGroup" style="display:none;">
+                <rect x="18" y="18" width="270" height="46" rx="12" fill="#ecfeff" stroke="#0ea5e9" stroke-width="2"></rect>
+                <text id="svgArea" x="30" y="48" text-anchor="start" fill="#075985" class="svg-text" font-size="16">مساحة القاعدة: —</text>
+
+                <line x1="372" y1="190" x2="372" y2="110" stroke="#0f172a" stroke-width="2"
+                      marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+                <text id="svgH2" x="372" y="100" text-anchor="middle" fill="#0f172a" class="svg-text" font-size="14">الارتفاع: —</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- اختيار طريقة القاعدة (يظهر فقط إذا وضع الطالب غير مفعّل) -->
+        <div id="baseModeCard" class="p-4 rounded-2xl bg-white border border-slate-200">
+          <p class="font-extrabold text-slate-800 mb-2">اختر طريقة إدخال القاعدة:</p>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <label class="flex items-start gap-3 p-3 rounded-2xl border border-slate-200 bg-slate-50 cursor-pointer">
+              <input type="radio" name="baseMode" value="lw" class="mt-1" checked>
+              <div>
+                <div class="font-bold text-slate-800">طول × عرض</div>
+                <div class="text-sm text-slate-600">للمنشور ذو قاعدة مستطيلة/مربعة.</div>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-3 p-3 rounded-2xl border border-slate-200 bg-slate-50 cursor-pointer">
+              <input type="radio" name="baseMode" value="area" class="mt-1">
+              <div>
+                <div class="font-bold text-slate-800">مساحة القاعدة جاهزة</div>
+                <div class="text-sm text-slate-600">لأي قاعدة رباعية عندما تعرف مساحتها.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- الإدخالات -->
+        <div class="grid sm:grid-cols-2 gap-4">
+          <!-- طول وعرض -->
+          <div id="lwBox" class="p-4 rounded-2xl bg-white border border-slate-200">
+            <div class="font-extrabold text-slate-800 mb-3">أبعاد القاعدة</div>
+
+            <label class="block text-sm font-bold text-slate-700 mb-1">الطول</label>
+            <input id="length" type="number" inputmode="decimal" min="0" step="any"
+              class="no-spin w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              placeholder="أدخل الطول" />
+
+            <div class="h-3"></div>
+
+            <label class="block text-sm font-bold text-slate-700 mb-1">العرض</label>
+            <input id="width" type="number" inputmode="decimal" min="0" step="any"
+              class="no-spin w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              placeholder="أدخل العرض" />
+          </div>
+
+          <!-- مساحة القاعدة -->
+          <div id="areaBox" class="hidden p-4 rounded-2xl bg-white border border-slate-200">
+            <div class="font-extrabold text-slate-800 mb-3">مساحة القاعدة</div>
+
+            <label class="block text-sm font-bold text-slate-700 mb-1">مساحة القاعدة</label>
+            <input id="baseArea" type="number" inputmode="decimal" min="0" step="any"
+              class="no-spin w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              placeholder="أدخل مساحة القاعدة" />
+
+            <p class="text-xs text-slate-500 mt-2">
+              مساحة القاعدة بوحدة <span class="font-bold" id="unitSq">سم²</span>.
+            </p>
+          </div>
+
+          <!-- الارتفاع -->
+          <div class="p-4 rounded-2xl bg-white border border-slate-200 sm:col-span-2">
+            <div class="font-extrabold text-slate-800 mb-3">ارتفاع المنشور</div>
+
+            <label class="block text-sm font-bold text-slate-700 mb-1">الارتفاع</label>
+            <input id="height" type="number" inputmode="decimal" min="0" step="any"
+              class="no-spin w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              placeholder="أدخل الارتفاع" />
+
+            <p class="text-xs text-slate-500 mt-2">
+              القاعدة: <span class="font-bold">الحجم = مساحة القاعدة × الارتفاع</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center pt-2">
+          <button id="resetBtn1" class="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 font-bold">
+            مسح القيم
+          </button>
+
+          <div class="flex gap-2">
+            <button id="next1" class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-extrabold hover:bg-indigo-700">
+              التالي
+            </button>
+          </div>
+        </div>
+
+        <p id="msg1" class="text-sm font-bold text-rose-600 hidden"></p>
+      </div>
+
+      <!-- الخطوة 2 -->
+      <div id="step2" class="hidden space-y-4">
+        <div class="p-4 rounded-2xl bg-white border border-slate-200">
+          <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <div class="font-extrabold text-slate-800 text-lg">النتيجة</div>
+              <p class="text-sm text-slate-600">الحساب يتحدث تلقائيًا عند تغيير القيم.</p>
+            </div>
+            <button id="copyBtn" class="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800">
+              نسخ النتيجة
+            </button>
+          </div>
+
+          <div class="grid sm:grid-cols-3 gap-3 mt-4">
+            <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200">
+              <div class="text-xs text-slate-500 font-bold">مساحة القاعدة</div>
+              <div id="outArea" class="text-xl font-extrabold text-slate-900 mt-1">—</div>
+              <div id="outAreaUnit" class="text-sm text-slate-600 font-bold">سم²</div>
+            </div>
+
+            <div class="p-3 rounded-2xl bg-indigo-50 border border-indigo-200">
+              <div class="text-xs text-indigo-700 font-bold">الارتفاع</div>
+              <div id="outH" class="text-xl font-extrabold text-indigo-900 mt-1">—</div>
+              <div id="outHUnit" class="text-sm text-indigo-700 font-bold">سم</div>
+            </div>
+
+            <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-200">
+              <div class="text-xs text-emerald-700 font-bold">الحجم</div>
+              <div id="outV" class="text-2xl font-extrabold text-emerald-900 mt-1">—</div>
+              <div id="outVUnit" class="text-sm text-emerald-700 font-bold">سم³</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white border border-slate-200">
+          <div class="font-extrabold text-slate-800 mb-2">خطوات الحل</div>
+          <div id="stepsBox" class="text-sm sm:text-base text-slate-700 leading-7">—</div>
+        </div>
+
+        <p id="msg2" class="text-sm font-bold text-rose-600 hidden"></p>
+
+        <div class="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center pt-2">
+          <button id="back2" class="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 font-bold">
+            السابق
+          </button>
+
+          <div class="flex gap-2">
+            <button id="next2" class="px-5 py-2 rounded-xl bg-indigo-600 text-white font-extrabold hover:bg-indigo-700">
+              التالي
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- الخطوة 3 -->
+      <div id="step3" class="hidden space-y-4">
+        <div class="p-4 rounded-2xl bg-white border border-slate-200">
+          <div class="font-extrabold text-slate-800 text-lg mb-2">القاعدة (القانون)</div>
+
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 leading-7">
+            <div class="font-extrabold text-slate-900">حجم المنشور الرباعي = مساحة القاعدة × الارتفاع</div>
+            <div class="text-slate-700 mt-2">
+              - إذا كانت القاعدة <span class="font-bold">مستطيل/مربع</span>: مساحة القاعدة = الطول × العرض<br/>
+              - إذا كانت مساحة القاعدة معروفة: استخدمها مباشرة ثم اضربها في الارتفاع
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <div class="font-extrabold text-slate-800 mb-2">مثال سريع</div>
+            <div class="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-slate-800 leading-7">
+              إذا كان الطول = ٨ سم، العرض = ٥ سم، الارتفاع = ٣ سم<br/>
+              مساحة القاعدة = ٨ × ٥ = ٤٠ سم²<br/>
+              الحجم = ٤٠ × ٣ = ١٢٠ سم³
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center pt-2">
+          <button id="back3" class="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 font-bold">
+            السابق
+          </button>
+
+          <button id="resetBtn3" class="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800">
+            حساب جديد
+          </button>
+        </div>
+      </div>
+
+      <!-- ✅ تذييل ثابت في كل الخطوات -->
+      <footer class="mt-5 pt-3 border-t border-slate-200 text-center text-xs text-slate-500">
+        إعداد: أ/ فاطمة هزازي — الملتقى التفاعلي
+      </footer>
+    </section>
+  </main>
+
+  <script>
+    // ===== أدوات =====
+    const arabicMap = {'0':'٠','1':'١','2':'٢','3':'٣','4':'٤','5':'٥','6':'٦','7':'٧','8':'٨','9':'٩','-':'-','.' : '.'};
+    const toArabicDigits = (value) => String(value).replace(/[0-9.-]/g, ch => arabicMap[ch] ?? ch);
+
+    const clampNum = (v) => {
+      if (v === "" || v === null || v === undefined) return null;
+      const n = Number(v);
+      if (!isFinite(n) || n < 0) return null;
+      return n;
+    };
+
+    const fmt = (n) => {
+      if (n === null) return "—";
+      const s = (Math.round(n * 1000) / 1000).toString();
+      return s;
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    // ===== عناصر =====
+    const step1 = $("step1"), step2 = $("step2"), step3 = $("step3");
+    const dot1 = $("dot1"), dot2 = $("dot2"), dot3 = $("dot3");
+
+    const unitSel = $("unit");
+    const arabicDigitsChk = $("arabicDigits");
+    const studentModeChk = $("studentMode");
+
+    const baseModeCard = $("baseModeCard");
+    const lwBox = $("lwBox"), areaBox = $("areaBox");
+
+    const lengthInp = $("length"), widthInp = $("width"), baseAreaInp = $("baseArea"), heightInp = $("height");
+
+    const outArea = $("outArea"), outH = $("outH"), outV = $("outV");
+    const outAreaUnit = $("outAreaUnit"), outHUnit = $("outHUnit"), outVUnit = $("outVUnit");
+    const unitSq = $("unitSq");
+
+    const stepsBox = $("stepsBox");
+    const msg1 = $("msg1"), msg2 = $("msg2");
+
+    // SVG labels
+    const svgLen = $("svgLen"), svgWid = $("svgWid"), svgH = $("svgH");
+    const dimLWGroup = $("dimLWGroup");
+    const dimAreaGroup = $("dimAreaGroup");
+    const svgArea = $("svgArea"), svgH2 = $("svgH2");
+
+    // ===== حالة =====
+    let currentStep = 1;
+
+    const getBaseMode = () => document.querySelector('input[name="baseMode"]:checked')?.value || "lw";
+
+    const renderNum = (n) => {
+      const s = fmt(n);
+      return arabicDigitsChk.checked ? toArabicDigits(s) : s;
+    };
+
+    const withUnit = (n, unit, power = 1) => {
+      if (n === null) return "—";
+      const u = power === 1 ? unit : (unit + (power === 2 ? "²" : "³"));
+      return `${renderNum(n)} ${u}`;
+    };
+
+    const updateUnits = () => {
+      const u = unitSel.value;
+      unitSq.textContent = u + "²";
+      outAreaUnit.textContent = u + "²";
+      outHUnit.textContent = u;
+      outVUnit.textContent = u + "³";
+    };
+
+    const setDots = () => {
+      const active = (dot, on) => {
+        dot.classList.toggle("bg-indigo-600", on);
+        dot.classList.toggle("bg-slate-300", !on);
+      };
+      active(dot1, currentStep === 1);
+      active(dot2, currentStep === 2);
+      active(dot3, currentStep === 3);
+    };
+
+    const showStep = (n) => {
+      currentStep = n;
+      step1.classList.toggle("hidden", n !== 1);
+      step2.classList.toggle("hidden", n !== 2);
+      step3.classList.toggle("hidden", n !== 3);
+      msg1.classList.add("hidden");
+      msg2.classList.add("hidden");
+      setDots();
+      if (n === 2) computeAndRender();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const enforceStudentMode = () => {
+      const isStudent = studentModeChk.checked;
+      baseModeCard.classList.toggle("hidden", isStudent);
+
+      if (isStudent) {
+        const lwRadio = document.querySelector('input[name="baseMode"][value="lw"]');
+        if (lwRadio) lwRadio.checked = true;
+      }
+      toggleBaseInputs();
+    };
+
+    const toggleBaseInputs = () => {
+      const mode = getBaseMode();
+      if (mode === "lw") {
+        lwBox.classList.remove("hidden");
+        areaBox.classList.add("hidden");
+      } else {
+        lwBox.classList.add("hidden");
+        areaBox.classList.remove("hidden");
+      }
+
+      if (mode === "area" && !studentModeChk.checked) {
+        dimLWGroup.style.display = "none";
+        dimAreaGroup.style.display = "block";
+      } else {
+        dimLWGroup.style.display = "block";
+        dimAreaGroup.style.display = "none";
+      }
+
+      computeAndRender();
+    };
+
+    const validateStep1 = () => {
+      const mode = getBaseMode();
+      const h = clampNum(heightInp.value);
+      if (h === null) return { ok:false, msg:"أدخل الارتفاع بشكل صحيح (رقم موجب أو صفر)." };
+
+      if (mode === "lw") {
+        const l = clampNum(lengthInp.value);
+        const w = clampNum(widthInp.value);
+        if (l === null || w === null) return { ok:false, msg:"أدخل الطول والعرض بشكل صحيح." };
+        return { ok:true };
+      } else {
+        const a = clampNum(baseAreaInp.value);
+        if (a === null) return { ok:false, msg:"أدخل مساحة القاعدة بشكل صحيح." };
+        return { ok:true };
+      }
+    };
+
+    const compute = () => {
+      const mode = getBaseMode();
+      const h = clampNum(heightInp.value);
+      if (h === null) return { ok:false, mode };
+
+      let area = null, l = null, w = null, a = null;
+
+      if (mode === "lw") {
+        l = clampNum(lengthInp.value);
+        w = clampNum(widthInp.value);
+        if (l === null || w === null) return { ok:false, mode };
+        area = l * w;
+      } else {
+        a = clampNum(baseAreaInp.value);
+        if (a === null) return { ok:false, mode };
+        area = a;
+      }
+
+      const v = area * h;
+      return { ok:true, mode, area, h, v, l, w, a };
+    };
+
+    const updateDiagram = (data) => {
+      const u = unitSel.value;
+
+      const l = clampNum(lengthInp.value);
+      const w = clampNum(widthInp.value);
+      const h = clampNum(heightInp.value);
+      const a = clampNum(baseAreaInp.value);
+
+      // نصوص الرسم (عند عدم وجود قيمة لا يعرض الوحدة)
+      svgLen.textContent = `الطول: ${l === null ? "—" : withUnit(l, u, 1)}`;
+      svgWid.textContent = `العرض: ${w === null ? "—" : withUnit(w, u, 1)}`;
+      svgH.textContent   = `الارتفاع: ${h === null ? "—" : withUnit(h, u, 1)}`;
+
+      svgArea.textContent = `مساحة القاعدة: ${a === null ? "—" : withUnit(a, u, 2)}`;
+      svgH2.textContent   = `الارتفاع: ${h === null ? "—" : withUnit(h, u, 1)}`;
+
+      // إذا الحساب صحيح، اعرض القيم المحسوبة
+      if (data?.ok) {
+        if (data.mode === "area" && !studentModeChk.checked) {
+          svgArea.textContent = `مساحة القاعدة: ${withUnit(data.area, u, 2)}`;
+          svgH2.textContent   = `الارتفاع: ${withUnit(data.h, u, 1)}`;
+        } else {
+          svgLen.textContent = `الطول: ${withUnit(data.l, u, 1)}`;
+          svgWid.textContent = `العرض: ${withUnit(data.w, u, 1)}`;
+          svgH.textContent   = `الارتفاع: ${withUnit(data.h, u, 1)}`;
+        }
+      }
+    };
+
+    const computeAndRender = () => {
+      updateUnits();
+      const data = compute();
+
+      updateDiagram(data);
+
+      if (!data.ok) {
+        outArea.textContent = "—";
+        outH.textContent = "—";
+        outV.textContent = "—";
+        stepsBox.textContent = "—";
+        return;
+      }
+
+      outArea.textContent = renderNum(data.area);
+      outH.textContent = renderNum(data.h);
+      outV.textContent = renderNum(data.v);
+
+      const u = unitSel.value;
+      let html = "";
+
+      if (data.mode === "lw") {
+        html += `
+          <div>١) مساحة القاعدة = الطول × العرض</div>
+          <div class="mt-1 font-extrabold">
+            مساحة القاعدة = ${renderNum(data.l)} × ${renderNum(data.w)} = ${renderNum(data.area)} ${u}²
+          </div>
+          <div class="mt-3">٢) الحجم = مساحة القاعدة × الارتفاع</div>
+          <div class="mt-1 font-extrabold">
+            الحجم = ${renderNum(data.area)} × ${renderNum(data.h)} = ${renderNum(data.v)} ${u}³
+          </div>
+        `;
+      } else {
+        html += `
+          <div>١) مساحة القاعدة (مُدخلة مباشرة)</div>
+          <div class="mt-1 font-extrabold">
+            مساحة القاعدة = ${renderNum(data.area)} ${u}²
+          </div>
+          <div class="mt-3">٢) الحجم = مساحة القاعدة × الارتفاع</div>
+          <div class="mt-1 font-extrabold">
+            الحجم = ${renderNum(data.area)} × ${renderNum(data.h)} = ${renderNum(data.v)} ${u}³
+          </div>
+        `;
+      }
+
+      stepsBox.innerHTML = html;
+    };
+
+    const resetAll = () => {
+      lengthInp.value = "";
+      widthInp.value = "";
+      baseAreaInp.value = "";
+      heightInp.value = "";
+      computeAndRender();
+      showStep(1);
+    };
+
+    // ===== أحداث =====
+    document.querySelectorAll('input[name="baseMode"]').forEach(r => r.addEventListener("change", toggleBaseInputs));
+    studentModeChk.addEventListener("change", enforceStudentMode);
+
+    [unitSel, arabicDigitsChk, lengthInp, widthInp, baseAreaInp, heightInp].forEach(el => {
+      el.addEventListener("input", computeAndRender);
+      el.addEventListener("change", computeAndRender);
+    });
+
+    $("next1").addEventListener("click", () => {
+      const v = validateStep1();
+      if (!v.ok) {
+        msg1.textContent = v.msg;
+        msg1.classList.remove("hidden");
+        return;
+      }
+      showStep(2);
+    });
+
+    $("back2").addEventListener("click", () => showStep(1));
+    $("next2").addEventListener("click", () => showStep(3));
+    $("back3").addEventListener("click", () => showStep(2));
+
+    $("resetBtn1").addEventListener("click", resetAll);
+    $("resetBtn3").addEventListener("click", resetAll);
+
+    $("copyBtn").addEventListener("click", async () => {
+      const data = compute();
+      if (!data.ok) {
+        msg2.textContent = "أدخل القيم أولًا ثم جرّب النسخ.";
+        msg2.classList.remove("hidden");
+        return;
+      }
+      const u = unitSel.value;
+      const text =
+        `مساحة القاعدة: ${renderNum(data.area)} ${u}²\n` +
+        `الارتفاع: ${renderNum(data.h)} ${u}\n` +
+        `الحجم: ${renderNum(data.v)} ${u}³`;
+      try {
+        await navigator.clipboard.writeText(text);
+        msg2.textContent = "تم نسخ النتيجة ✅";
+        msg2.classList.remove("hidden");
+        msg2.classList.remove("text-rose-600");
+        msg2.classList.add("text-emerald-700");
+        setTimeout(() => msg2.classList.add("hidden"), 1500);
+      } catch {
+        msg2.textContent = "تعذر النسخ. انسخ يدويًا من الشاشة.";
+        msg2.classList.remove("hidden");
+      }
+    });
+
+    // تهيئة
+    enforceStudentMode();
+    updateUnits();
+    toggleBaseInputs();
+    computeAndRender();
+    showStep(1);
+  </script>
+</body>
+</html>
